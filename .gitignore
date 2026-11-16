@@ -17,3 +17,6 @@ backend/src/main/resources/application-local.properties
 
 # ---------- VS Code personal settings ----------
 .vscode/
+
+# ---------- Temporary files ----------
+*.tmp
