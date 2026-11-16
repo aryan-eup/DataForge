@@ -1,0 +1,19 @@
+# ---------- Maven build output ----------
+target/
+
+# ---------- Uploaded datasets (may contain private data) ----------
+backend/uploads/
+
+# ---------- Secrets and local configuration ----------
+backend/src/main/resources/application-local.properties
+.env
+
+# ---------- Java compiled files and logs ----------
+*.class
+*.log
+
+# ---------- macOS ----------
+.DS_Store
+
+# ---------- VS Code personal settings ----------
+.vscode/
