@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataForge — Synthetic Test Data Generator & Analytics Engine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Navigation / Brand Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-row">
+                <div class="logo">
+                    <span class="logo-icon">⚡</span>
+                    <span class="logo-text">Data<strong>Forge</strong></span>
+                    <span class="badge">v1.0 • Multi-Threaded Engine</span>
+                </div>
+                <div class="header-links">
+                    <span class="status-indicator"><span class="dot"></span> Engine Online</span>
+                </div>
+            </div>
+            <p class="subtitle">High-performance synthetic mock data generator with MySQL JDBC persistence and interactive statistical analytics</p>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Toast Notification -->
+        <div id="notification" class="notification hidden"></div>
+
+        <!-- Section 1: Data Generator Configuration -->
+        <section class="card config-card">
+            <div class="card-header">
+                <div>
+                    <h2>1. Generator Studio</h2>
+                    <span class="card-desc">Select domain schema, row volume, and target attributes</span>
+                </div>
+                <span class="pill-threads">⚡ 4 Worker Threads (Concurrent)</span>
+            </div>
+
+            <div class="form-grid">
+                <!-- Schema Selector -->
+                <div class="form-group">
+                    <label for="schemaSelect">Domain Schema</label>
+                    <select id="schemaSelect">
+                        <option value="students">Students (Academic & Performance)</option>
+                        <option value="employees">Employees (Enterprise Workforce)</option>
+                        <option value="products">Products (E-Commerce Inventory)</option>
+                    </select>
+                </div>
+
+                <!-- Row Count Input -->
+                <div class="form-group">
+                    <label for="rowCount">Row Count (1 - 100,000)</label>
+                    <div class="input-with-presets">
+                        <input type="number" id="rowCount" value="100" min="1" max="100000">
+                        <div class="presets">
+                            <button type="button" class="btn-preset" data-rows="50">50</button>
+                            <button type="button" class="btn-preset" data-rows="250">250</button>
+                            <button type="button" class="btn-preset" data-rows="1000">1K</button>
+                            <button type="button" class="btn-preset" data-rows="5000">5K</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column Checkboxes -->
+            <div class="form-group columns-group">
+                <div class="columns-header">
+                    <label>Select Target Attributes</label>
+                    <div class="col-actions">
+                        <button type="button" id="btnSelectAll" class="btn-link">Select All</button>
+                        <span>•</span>
+                        <button type="button" id="btnDeselectAll" class="btn-link">Clear All</button>
+                    </div>
+                </div>
+                <div id="columnCheckboxes" class="checkbox-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <button type="button" id="btnGenerate" class="btn btn-primary">
+                    <span class="btn-icon">🔨</span> Generate Dataset
+                </button>
+            </div>
+
+            <!-- Live Progress Bar -->
+            <div id="progressContainer" class="progress-container hidden">
+                <div class="progress-label">
+                    <span id="progressStatus">Partitioning workload across threads...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-track">
+                    <div id="progressBar" class="progress-bar-fill" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Results & Visual Analytics Studio -->
+        <section id="resultsSection" class="card results-card hidden">
+            <div class="card-header">
+                <div>
+                    <h2>2. Dataset Preview & Visual Analytics</h2>
+                    <span id="activeJobMeta" class="meta-info">Job # - 0 rows</span>
+                </div>
+                <div class="export-actions">
+                    <button type="button" id="btnCopyJson" class="btn btn-secondary btn-sm" title="Copy rows to clipboard as JSON">
+                        📋 Copy JSON
+                    </button>
+                    <button type="button" id="btnCopyCsv" class="btn btn-secondary btn-sm" title="Copy rows to clipboard as CSV">
+                        📋 Copy CSV
+                    </button>
+                    <button type="button" id="btnExportCsv" class="btn btn-secondary btn-sm">
+                        📥 Download CSV
+                    </button>
+                    <button type="button" id="btnExportSql" class="btn btn-secondary btn-sm">
+                        💾 Download SQL
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toolbar (Sorting, Search filter, Stats selector) -->
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <div class="toolbar-item search-item">
+                        <input type="text" id="tableSearch" placeholder="🔍 Search table rows..." class="search-input">
+                    </div>
+                    <div class="toolbar-item">
+                        <label for="sortColSelect">Sort by:</label>
+                        <select id="sortColSelect"></select>
+                        <button type="button" id="btnSortAsc" class="btn-sm" title="Sort Ascending">▲</button>
+                        <button type="button" id="btnSortDesc" class="btn-sm" title="Sort Descending">▼</button>
+                    </div>
+                </div>
+                <div class="toolbar-group">
+                    <div class="toolbar-item">
+                        <label for="statsColSelect">Analyze Column:</label>
+                        <select id="statsColSelect"></select>
+                        <button type="button" id="btnComputeStats" class="btn-sm btn-accent">📊 Analyze & Plot</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Analytics & Multi-Chart Panel -->
+            <div id="statsPanel" class="stats-panel hidden">
+                <div class="stats-header">
+                    <div>
+                        <h3 id="statsTitle">Column Statistical Distribution</h3>
+                        <span id="statsSubtitle" class="stats-subtitle">Interactive graphical breakdown</span>
+                    </div>
+                    <button type="button" id="btnCloseStats" class="btn-link close-stats-btn">✕ Close Analytics</button>
+                </div>
+
+                <!-- KPI Metric Cards Grid -->
+                <div class="stats-metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-label">Total Sample</span>
+                        <span id="statTotal" class="metric-val">-</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Distinct Values</span>
+                        <span id="statDistinct" class="metric-val">-</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Duplicates</span>
+                        <span id="statDuplicates" class="metric-val">-</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Mean (Average)</span>
+                        <span id="statAverage" class="metric-val">-</span>
+                    </div>
+                    <div class="metric-card" id="metricCardMedian">
+                        <span class="metric-label">Median (Q2)</span>
+                        <span id="statMedian" class="metric-val">-</span>
+                    </div>
+                    <div class="metric-card" id="metricCardStdDev">
+                        <span class="metric-label">Std Deviation</span>
+                        <span id="statStdDev" class="metric-val">-</span>
+                    </div>
+                </div>
+
+                <!-- Chart Type Selector Tabs -->
+                <div class="chart-studio-box">
+                    <div class="chart-tabs">
+                        <button type="button" class="chart-tab active" data-chart="bar">📊 Bar Histogram</button>
+                        <button type="button" class="chart-tab" data-chart="donut">🍩 Donut Share</button>
+                        <button type="button" class="chart-tab" data-chart="area">📈 Density Curve</button>
+                        <button type="button" class="chart-tab" data-chart="box" id="tabBoxPlot">📦 Box & Whisker</button>
+                    </div>
+
+                    <!-- Canvas/SVG Chart Display Area -->
+                    <div class="chart-render-wrap">
+                        <div id="chartContainer" class="chart-container">
+                            <!-- Dynamic SVG / Visual charts rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value Breakdown Table -->
+                <div class="top-frequent-box">
+                    <h4>Top Value Distribution & Frequency Share</h4>
+                    <div id="freqList" class="freq-list"></div>
+                </div>
+            </div>
+
+            <!-- Scrollable Data Table -->
+            <div class="table-container">
+                <table id="dataTable" class="data-table">
+                    <thead><tr id="tableHeader"></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div class="table-footer">
+                <span id="tableSummary">Showing records</span>
+            </div>
+        </section>
+
+        <!-- Section 3: MySQL Persistence History -->
+        <section class="card history-card">
+            <div class="card-header">
+                <div>
+                    <h2>3. Database Persistence (MySQL jobs)</h2>
+                    <span class="card-desc">Persistent transaction log of generated datasets</span>
+                </div>
+                <button type="button" id="btnRefreshHistory" class="btn-sm">🔄 Refresh Log</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table history-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Schema Name</th>
+                            <th>Row Count</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr><td colspan="5" class="empty-state">Loading history...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>DataForge • High-Performance Synthetic Test Data Generator & Analytics Platform • Java 17 & MySQL JDBC</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,22 +1,38 @@
-# ---------- Maven build output ----------
+# Byte-compiled / Object files
+bin/
+*.class
 target/
 
-# ---------- Uploaded datasets (may contain private data) ----------
-backend/uploads/
+# Package Files (Keep mysql-connector jar in lib)
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
 
-# ---------- Secrets and local configuration ----------
-backend/src/main/resources/application-local.properties
-.env
+# Virtual Machine Crash Logs
+hs_err_pid*
+replay_pid*
 
-# ---------- Java compiled files and logs ----------
-*.class
-*.log
-
-# ---------- macOS ----------
+# OS Generated
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# ---------- VS Code personal settings ----------
-.vscode/
+# Logs and databases
+*.log
+*.sqlite
+mysqldata/
 
-# ---------- Temporary files ----------
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
 *.tmp
